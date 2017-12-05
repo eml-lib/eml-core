@@ -1,0 +1,4 @@
+# EML-core
+
+## License
+MIT
