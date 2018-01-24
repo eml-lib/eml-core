@@ -1,3 +1,5 @@
+import { wrapArray } from './utils/array';
+
 function toAttributes(obj) {
     if (!obj) {
         return '';
@@ -76,7 +78,7 @@ function toAttributes(obj) {
 //     };
 // }
 
-const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr'];
+const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
 
 export default node => {
     const styles = [];
@@ -94,7 +96,7 @@ export default node => {
             let children = node.type(node.props);
             let html = '';
 
-            (Array.isArray(children) ? children : [children]).forEach(child => {
+            wrapArray(children).forEach(child => {
                 const isConfig = typeof child === 'object' && !child._isElement;
                 let el;
 
@@ -128,7 +130,7 @@ export default node => {
     const rendered = render(node);
 
     return (
-        `<!DOCTYPE html>
+`<!DOCTYPE html>
 <html>
     <head>
         <style type="text/css">
