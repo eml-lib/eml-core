@@ -25,8 +25,8 @@ function processTree(root, components = {}) {
 
 export { createElement };
 
-export default (xml, components) => {
+export function parse(xml, components) {
     const tree = xmlParser(xml);
 
     return processTree(tree.root, components);
-};
+}
