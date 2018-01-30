@@ -23,6 +23,8 @@ function processTree(root, components = {}) {
     return processNode(root);
 }
 
+export { createElement };
+
 export default (xml, components) => {
     const tree = xmlParser(xml);
 
