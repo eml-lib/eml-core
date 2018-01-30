@@ -1,5 +1,6 @@
 import xmlParser from './xml-parser';
 import createElement from './createElement';
+import render from './render';
 
 function processTree(root, components = {}) {
     function processNode(node) {
@@ -28,5 +29,5 @@ export { createElement };
 export function parse(xml, components) {
     const tree = xmlParser(xml);
 
-    return processTree(tree.root, components);
+    return render(processTree(tree.root, components));
 }
