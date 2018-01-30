@@ -1,9 +1,21 @@
 {
   "name": "eml-core",
   "version": "0.0.1",
-  "description": "",
-  "main": "build.js",
+  "author": "Vlad Trushin",
+  "description": "EML core",
+  "homepage": "https://github.com/eml-lib/eml-core",
+  "repository": "eml-lib/eml-core",
   "dependencies": {},
+  "main": "build.js",
+  "files": [
+    "build.js",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
@@ -14,20 +26,9 @@
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.2",
-    "xml-parser": "^1.2.1"
   },
-  "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/eml-lib/eml-core.git"
-  },
-  "author": "",
-  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eml-lib/eml-core/issues"
+    "url": "https://github.com/eml-lib/eml-core/issues",
   },
-  "homepage": "https://github.com/eml-lib/eml-core#readme"
+  "license": "ISC"
 }

@@ -31,10 +31,6 @@ export default {
             ]
         }),
     ],
-    external: [
-        // TODO: Change xml-parser to another parser who doesn't use node's built-ins
-        'tty', 'util', 'fs', 'net'
-    ],
     watch: {
         include: ['index.js', 'lib/**/*.js'],
         exclude: 'node_modules/**'

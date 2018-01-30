@@ -1,4 +1,4 @@
-import xmlParser from 'xml-parser';
+import xmlParser from './xml-parser';
 import createElement from './createElement';
 
 function processTree(root, components = {}) {
@@ -8,7 +8,7 @@ function processTree(root, components = {}) {
         }
 
         if (!(node.name in components)) {
-            throw new Error(`No component for ${ node.name }`);
+            throw new Error(`No component for ${node.name}`);
         }
 
         const children = node.children.length !== 0 ? node.children : [node.content];
