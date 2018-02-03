@@ -1,5 +1,5 @@
 import xmlParser from './xml-parser';
-import createElement from './createElement';
+import createElement from './create-element';
 import render from './render';
 
 function processTree(root, components = {}) {

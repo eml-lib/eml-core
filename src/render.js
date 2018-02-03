@@ -1,4 +1,5 @@
 import { wrapArray } from './utils/array';
+import cleanHtml from 'clean-html';
 
 function toAttributes(obj) {
     if (!obj) {
@@ -80,6 +81,15 @@ function toAttributes(obj) {
 
 const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
 
+function createTag(tagName, attributes, content) {
+    const attr = toAttributes(attributes);
+    const attrHtml = attr ? ' ' + attr : '';
+
+    return emptyElements.includes(tagName)
+        ? `<${tagName + attrHtml} />`
+        : `<${tagName + attrHtml}>${content}</${tagName}>`;
+}
+
 export default node => {
     const styles = [];
 
@@ -93,7 +103,7 @@ export default node => {
         }
 
         if (typeof node.type === 'function') {
-            let children = node.type(node.props);
+            const children = node.type(node.props);
             let html = '';
 
             wrapArray(children).forEach(child => {
@@ -102,8 +112,6 @@ export default node => {
 
                 if (isConfig) {
                     if (child.style) {
-                        console.log(child);
-
                         styles.push(child.style);
                     }
                     el = child.el;
@@ -119,17 +127,13 @@ export default node => {
 
         const { children, ...attrs } = node.props;
         const childrenHtml = children.map(render).join('');
-        const attr = toAttributes(attrs);
-        const attrHtml = attr ? ' ' + attr : '';
 
-        return emptyElements.includes(node.type)
-            ? `<${ node.type + attrHtml } />`
-            : `<${ node.type + attrHtml }>${ childrenHtml }</${ node.type }>`;
+        return createTag(node.type, attrs, childrenHtml);
     }
 
     const rendered = render(node);
 
-    return (
+    return cleanHtml(
 `<!DOCTYPE html>
 <html>
     <head>
