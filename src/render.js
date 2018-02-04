@@ -1,5 +1,3 @@
-import { wrapArray } from './utils/array';
-
 function toAttributes(obj) {
     if (!obj) {
         return '';
@@ -19,131 +17,50 @@ function toAttributes(obj) {
         .join(' ')
 }
 
-// const emptyConfig = {
-//     style: null,
-//     el: null
-// };
-//
-// function renderNull(node) {
-//     if (node !== null) {
-//         return null;
-//     }
-//
-//     return {
-//         ...emptyConfig,
-//         el: ''
-//     };
-// }
-//
-// function renderText(node) {
-//     if (!['string', 'number'].includes(typeof node)) {
-//         return null;
-//     }
-//
-//     return {
-//         ...emptyConfig,
-//         el: String(node)
-//     }
-// }
-//
-// function renderComponent(node) {
-//     if (typeof node.type !== 'function') {
-//         return null;
-//     }
-//
-//     const children = node.type(node.props);
-//     let html = '';
-//     let styles = [];
-//
-//     (Array.isArray(children) ? children : [children]).forEach(child => {
-//         const isConfig = typeof child === 'object' && !child._isElement;
-//         let el;
-//
-//         if (isConfig) {
-//             if (child.style) {
-//                 styles.push(child.style);
-//             }
-//             el = child.el;
-//         } else {
-//             el = child;
-//         }
-//
-//         html += render(el);
-//     });
-//
-//     return {
-//         ...emptyConfig,
-//         style: styles.length !== 0 ? styles.join(' ') : null,
-//         el: html
-//     };
-// }
-
 const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
 
-function createTag(tagName, attributes, content) {
+function createTag(tagName, attributes, content, { beautify, depth }) {
     const attr = toAttributes(attributes);
     const attrHtml = attr ? ' ' + attr : '';
 
-    return emptyElements.includes(tagName)
-        ? `<${tagName + attrHtml} />`
-        : `<${tagName + attrHtml}>${content}</${tagName}>`;
+    return '\t'.repeat(depth) + (emptyElements.includes(tagName)
+        ? `<${tagName + attrHtml} />\n`
+        : `<${tagName + attrHtml}>\n${content}${ '\t'.repeat(depth) }</${tagName}>\n`);
 }
 
-export default (node, beautify) => {
+export default (node, options) => {
     const styles = [];
 
-    console.log(node);
+    function render(node, depth = 0) {
+        // Component
+        if (node && node.type && typeof node.type === 'function') {
+            node = node.type({ ...node.props, ...options });
+        }
 
-    function render(node) {
         if (node === null) {
-            return '';
+            return '\t'.repeat(depth) + '' + '\n';
         }
 
         if (typeof node === 'string' || typeof node === 'number') {
-            return String(node);
-        }
-
-        if (typeof node.type === 'function') {
-            const children = node.type(node.props);
-            let html = '';
-
-            wrapArray(children).forEach(child => {
-                const isConfig = typeof child === 'object' && !child._isElement;
-                let el;
-
-                if (isConfig) {
-                    if (child.style) {
-                        styles.push(child.style);
-                    }
-                    el = child.el;
-                } else {
-                    el = child;
-                }
-
-                html += '\t' + render(el);
-            });
-
-            return html;
+            return '\t'.repeat(depth) + String(node) + '\n';
         }
 
         const { children, ...attrs } = node.props;
-        const childrenHtml = children.map(render).join('');
+        const childrenHtml = children.map(child => render(child, depth + 1)).join('');
 
-        return createTag(node.type, attrs, childrenHtml);
+        return createTag(node.type, attrs, childrenHtml, { depth });
     }
-
-    const rendered = render(node);
 
     return (
 `<!DOCTYPE html>
 <html>
     <head>
         <style type="text/css">
-            ${ styles.join(' ') }
+${ styles.join(' ') }
         </style>
     </head>
     <body>
-        ${ rendered }
+${ render(node, 2) }
     </body>
 </html>`
     );

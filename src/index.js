@@ -5,7 +5,7 @@ import render from './render';
 function processTree(root, components = {}) {
     function processNode(node) {
         if (typeof node === 'string') {
-            return node;
+            return node.trim();
         }
 
         if (!(node.name in components)) {
@@ -17,7 +17,7 @@ function processTree(root, components = {}) {
         return createElement(
             components[node.name],
             node.attributes,
-            ...children
+            ...children.map(processNode)
         );
     }
 
@@ -26,8 +26,8 @@ function processTree(root, components = {}) {
 
 export { createElement };
 
-export function parse(xml, components) {
+export function parse(xml, { components, ...options }) {
     const tree = xmlParser(xml);
 
-    return render(processTree(tree.root, components));
+    return tree.root ? render(processTree(tree.root, components), options) : null;
 }
