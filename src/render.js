@@ -1,5 +1,4 @@
 import { wrapArray } from './utils/array';
-import cleanHtml from 'clean-html';
 
 function toAttributes(obj) {
     if (!obj) {
@@ -90,8 +89,10 @@ function createTag(tagName, attributes, content) {
         : `<${tagName + attrHtml}>${content}</${tagName}>`;
 }
 
-export default node => {
+export default (node, beautify) => {
     const styles = [];
+
+    console.log(node);
 
     function render(node) {
         if (node === null) {
@@ -133,7 +134,7 @@ export default node => {
 
     const rendered = render(node);
 
-    return cleanHtml(
+    return (
 `<!DOCTYPE html>
 <html>
     <head>
