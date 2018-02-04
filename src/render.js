@@ -19,37 +19,54 @@ function toAttributes(obj) {
 
 const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
 
-function createTag(tagName, attributes, content, { beautify, depth }) {
+function renderTab(depth) {
+    return '\t'.repeat(depth);
+}
+
+function renderTag(tagName, attributes, content, { beautify, depth }) {
     const attr = toAttributes(attributes);
     const attrHtml = attr ? ' ' + attr : '';
+    const tab = renderTab(depth);
 
-    return '\t'.repeat(depth) + (emptyElements.includes(tagName)
-        ? `<${tagName + attrHtml} />\n`
-        : `<${tagName + attrHtml}>\n${content}${ '\t'.repeat(depth) }</${tagName}>\n`);
+    if (emptyElements.includes(tagName)) {
+        const tag = `<${tagName + attrHtml} />`;
+
+        return beautify ? tab + tag + '\n' : tag;
+    } else {
+        const openingTag = `<${tagName + attrHtml}>`;
+        const closingTag = `</${tagName}>`;
+
+        return beautify
+            ? tab + openingTag + '\n' + content + tab + closingTag + '\n'
+            : openingTag + content + closingTag;
+    }
 }
 
 export default (node, options) => {
+    const hasOptions = Object.keys(options).length !== 0;
     const styles = [];
 
-    function render(node, depth = 0) {
+    function renderNode(node, depth = 0) {
         // Component
         if (node && node.type && typeof node.type === 'function') {
-            node = node.type({ ...node.props, ...options });
+            return renderNode(hasOptions ? node.type(options).component(node.props) : node.type(node.props), depth);
         }
 
         if (node === null) {
-            return '\t'.repeat(depth) + '' + '\n';
+            return renderTab(depth) + '' + '\n';
         }
 
         if (typeof node === 'string' || typeof node === 'number') {
-            return '\t'.repeat(depth) + String(node) + '\n';
+            return renderTab(depth) + String(node) + '\n';
         }
 
         const { children, ...attrs } = node.props;
-        const childrenHtml = children.map(child => render(child, depth + 1)).join('');
+        const childrenHtml = children.map(child => renderNode(child, depth + 1)).join('');
 
-        return createTag(node.type, attrs, childrenHtml, { depth });
+        return renderTag(node.type, attrs, childrenHtml, { depth });
     }
+
+    const rendered = renderNode(node, 2);
 
     return (
 `<!DOCTYPE html>
@@ -60,7 +77,7 @@ ${ styles.join(' ') }
         </style>
     </head>
     <body>
-${ render(node, 2) }
+${ rendered }
     </body>
 </html>`
     );
