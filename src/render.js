@@ -120,7 +120,7 @@ export default (node, beautify) => {
                     el = child;
                 }
 
-                html += render(el);
+                html += '\t' + render(el);
             });
 
             return html;
