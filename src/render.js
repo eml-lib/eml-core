@@ -24,16 +24,16 @@ function renderTab(depth) {
 }
 
 function renderTag(tagName, attributes, content, { beautify, depth }) {
-    const attr = toAttributes(attributes);
-    const attrHtml = attr ? ' ' + attr : '';
+    const attrs = toAttributes(attributes);
+    const tagNameWithAttrs = attrs ? tagName + ' ' + attrs : tagName;
     const tab = renderTab(depth);
 
     if (emptyElements.includes(tagName)) {
-        const tag = `<${tagName + attrHtml} />`;
+        const tag = `<${tagNameWithAttrs} />`;
 
         return beautify ? tab + tag + '\n' : tag;
     } else {
-        const openingTag = `<${tagName + attrHtml}>`;
+        const openingTag = `<${tagNameWithAttrs}>`;
         const closingTag = `</${tagName}>`;
 
         return beautify
