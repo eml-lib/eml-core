@@ -19,14 +19,14 @@ function toAttributes(obj) {
 
 const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
 
-function renderTab(depth) {
-    return '\t'.repeat(depth);
+function renderTabs(count) {
+    return '\t'.repeat(count);
 }
 
-function renderTag(tagName, attributes, content, { beautify, depth }) {
+function renderTag(tagName, attributes, content, { beautify = true, depth = 0 }) {
     const attrs = toAttributes(attributes);
     const tagNameWithAttrs = attrs ? tagName + ' ' + attrs : tagName;
-    const tab = renderTab(depth);
+    const tab = renderTabs(depth);
 
     if (emptyElements.includes(tagName)) {
         const tag = `<${tagNameWithAttrs} />`;
@@ -53,11 +53,11 @@ export default (node, options) => {
         }
 
         if (node === null) {
-            return renderTab(depth) + '' + '\n';
+            return renderTabs(depth) + '' + '\n';
         }
 
         if (typeof node === 'string' || typeof node === 'number') {
-            return renderTab(depth) + String(node) + '\n';
+            return renderTabs(depth) + String(node) + '\n';
         }
 
         const { children, ...attrs } = node.props;
