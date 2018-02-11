@@ -1,6 +1,6 @@
 {
   "name": "eml-core",
-  "version": "0.0.102",
+  "version": "0.0.200",
   "author": "Vlad Trushin",
   "description": "EML core",
   "homepage": "https://github.com/eml-lib/eml-core",
@@ -15,7 +15,9 @@
     "watch": "rollup -c -w",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "warning": "^3.0.0"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",

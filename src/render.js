@@ -1,84 +1,56 @@
-function toAttributes(obj) {
-    if (!obj) {
-        return '';
-    }
+import warning from 'warning';
+import renderCss from './render-css';
+import renderHtml from './render-html';
 
-    return Object.keys(obj)
-        .filter(key => obj[key])
-        .map(key => {
-            let attrName = key;
-
-            if (key === 'className') {
-                attrName = 'class';
-            }
-
-            return `${ attrName }="${ obj[key] }"`;
-        })
-        .join(' ')
+function createHtmlElConfig(tagName, attrs = null, children = []) {
+    return { tagName, attrs, children };
 }
 
-const emptyElements = ['hr', 'img', 'br', 'link', 'meta', 'wbr', 'input'];
+export default (parentJsxEl, options) => {
+    const passedComponents = [];
+    const cssList = [];
 
-function renderTabs(count) {
-    return '\t'.repeat(count);
-}
-
-function renderTag(tagName, attributes, content, { beautify = true, depth = 0 }) {
-    const attrs = toAttributes(attributes);
-    const tagNameWithAttrs = attrs ? tagName + ' ' + attrs : tagName;
-    const tab = renderTabs(depth);
-
-    if (emptyElements.includes(tagName)) {
-        const tag = `<${tagNameWithAttrs} />`;
-
-        return beautify ? tab + tag + '\n' : tag;
-    } else {
-        const openingTag = `<${tagNameWithAttrs}>`;
-        const closingTag = `</${tagName}>`;
-
-        return beautify
-            ? tab + openingTag + '\n' + content + tab + closingTag + '\n'
-            : openingTag + content + closingTag;
-    }
-}
-
-export default (node, options) => {
-    const hasOptions = Object.keys(options).length !== 0;
-    const styles = [];
-
-    function renderNode(node, depth = 0) {
+    function renderJsxEl(node) {
         // Component
         if (node && node.type && typeof node.type === 'function') {
-            return renderNode(hasOptions ? node.type(options).component(node.props) : node.type(node.props), depth);
-        }
+            const fn = node.type;
+            const renderedNode = fn(node.props, options);
 
-        if (node === null) {
-            return renderTabs(depth) + '' + '\n';
+            if ('css' in fn && !passedComponents.includes(fn)) {
+                passedComponents.push(fn);
+                cssList.push(typeof fn.css === 'function' ? fn.css(options) : fn.css);
+            }
+
+            return renderJsxEl(renderedNode);
         }
 
         if (typeof node === 'string' || typeof node === 'number') {
-            return renderTabs(depth) + String(node) + '\n';
+            return String(node);
+        }
+
+        if (node === null || node === undefined) {
+            return '';
         }
 
         const { children, ...attrs } = node.props;
-        const childrenHtml = children.map(child => renderNode(child, depth + 1)).join('');
 
-        return renderTag(node.type, attrs, childrenHtml, { depth });
+        return createHtmlElConfig(node.type, attrs, children.map(renderJsxEl));
     }
 
-    const rendered = renderNode(node, 2);
+    warning(false, 'asdf asdfasdf asdf');
 
-    return (
-`<!DOCTYPE html>
-<html>
-    <head>
-        <style type="text/css">
-${ styles.join(' ') }
-        </style>
-    </head>
-    <body>
-${ rendered }
-    </body>
-</html>`
+    const content = renderJsxEl(parentJsxEl);
+
+    return renderHtml(
+        createHtmlElConfig('html', null, [
+            createHtmlElConfig('head', null, [
+                createHtmlElConfig('style', { type: 'text/css' }, [
+                    renderCss(cssList)
+                ])
+            ]),
+            createHtmlElConfig('body', null, [
+                content
+            ]),
+        ])
     );
 };
