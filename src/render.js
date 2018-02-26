@@ -1,4 +1,5 @@
 import warning from 'warning';
+import Fragment from './fragment';
 import renderCss from './render-css';
 import renderHtml from './render-html';
 
@@ -34,23 +35,26 @@ export default (parentJsxEl, options) => {
 
         const { children, ...attrs } = node.props;
 
-        return createHtmlElConfig(node.type, attrs, children.map(renderJsxEl));
-    }
+        const childrenWithFragments = children.reduce((acc, child) => acc.concat(
+            child.type === Fragment ? child.props.children : child
+        ), []);
 
-    warning(false, 'asdf asdfasdf asdf');
+        return createHtmlElConfig(node.type, attrs, childrenWithFragments.map(renderJsxEl));
+    }
 
     const content = renderJsxEl(parentJsxEl);
 
     return renderHtml(
         createHtmlElConfig('html', null, [
             createHtmlElConfig('head', null, [
+                createHtmlElConfig('meta', { charset: 'utf-8' }),
+                createHtmlElConfig('meta', { httpEquiv: 'Content-Type', content: 'text/html; charset=utf-8' }),
+                createHtmlElConfig('meta', { name: 'viewport', content: 'width=device-width; initial-scale=1.0; maximum-scale=1.0;' }),
                 createHtmlElConfig('style', { type: 'text/css' }, [
                     renderCss(cssList)
                 ])
             ]),
-            createHtmlElConfig('body', null, [
-                content
-            ]),
+            content
         ])
     );
 };

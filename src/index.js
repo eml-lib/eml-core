@@ -1,10 +1,15 @@
 import { dashedToCamel } from './utils/string';
 import xmlParser from './xml-parser';
 import createElement from './create-element';
+import Fragment from './fragment';
 import render from './render';
 
 function processTree(root, components = {}) {
     function processNode(node) {
+        if (!node) {
+            return '';
+        }
+
         if (typeof node === 'string') {
             return node.trim();
         }
@@ -29,7 +34,7 @@ function processTree(root, components = {}) {
     return processNode(root);
 }
 
-export { createElement };
+export { createElement, Fragment };
 
 export function parse(xml, { components = {}, options = {} }) {
     const tree = xmlParser(xml);

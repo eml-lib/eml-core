@@ -1,19 +1,26 @@
 import renderStyle from './render-style';
 
+const attrsToLowerCase = ['cellPadding', 'cellSpacing'];
+
 function renderAttributes(obj) {
     if (!obj) {
         return '';
     }
 
-    return Object.entries(obj).map(([attr, value]) => {
-        if (attr === 'className') {
-            attr = 'class';
-        } else if (attr === 'style' && typeof value === 'object') {
-            value = renderStyle(value);
-        }
+    return Object.entries(obj)
+        .filter(([attr, value]) => !['', null, undefined].includes(value))
+        .map(([attr, value]) => {
+            if (attr === 'className') {
+                attr = 'class';
+            } else if (attrsToLowerCase.includes(attr)) {
+                attr = attr.toLowerCase();
+            } else if (attr === 'style' && typeof value === 'object') {
+                value = renderStyle(value);
+            }
 
-        return `${attr}="${value}"`;
-    }).join(' ')
+            return `${attr}="${value}"`;
+        })
+        .join(' ')
 }
 
 const doctype = '<!DOCTYPE html>';
