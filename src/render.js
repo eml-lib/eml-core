@@ -36,7 +36,7 @@ export default (parentJsxEl, options) => {
         const { children, ...attrs } = node.props;
 
         const childrenWithFragments = children.reduce((acc, child) => acc.concat(
-            child.type === Fragment ? child.props.children : child
+            child && child.type === Fragment ? child.props.children : child
         ), []);
 
         return createHtmlElConfig(node.type, attrs, childrenWithFragments.map(renderJsxEl));
@@ -48,7 +48,7 @@ export default (parentJsxEl, options) => {
         createHtmlElConfig('html', null, [
             createHtmlElConfig('head', null, [
                 createHtmlElConfig('meta', { charset: 'utf-8' }),
-                createHtmlElConfig('meta', { httpEquiv: 'Content-Type', content: 'text/html; charset=utf-8' }),
+                createHtmlElConfig('meta', { 'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8' }),
                 createHtmlElConfig('meta', { name: 'viewport', content: 'width=device-width; initial-scale=1.0; maximum-scale=1.0;' }),
                 createHtmlElConfig('style', { type: 'text/css' }, [
                     renderCss(cssList)
