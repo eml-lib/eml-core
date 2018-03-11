@@ -2,7 +2,12 @@ import commonJs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 
-const baseConfig = {
+export default {
+    input: 'src/index.js',
+    output: {
+        file: 'build.js',
+        format: 'cjs'
+    },
     plugins: [
         nodeResolve(),
         commonJs({
@@ -21,28 +26,16 @@ const baseConfig = {
                 ['transform-react-jsx', {
                     pragma: 'createElement'
                 }]
-            ]
+            ],
         }),
+    ],
+    external: [
+        // 'xml-js' needs
+        'stream',
+        'string_decoder'
     ],
     watch: {
         include: 'src/**/*.js',
         exclude: 'node_modules/**'
     }
-};
-
-const fileConfigs = [
-    {
-        inputFileName: 'index.js',
-        outputFileName: 'build.js'
-    },
-    // 'create-element.js',
-    // 'create-fragment.js'
-];
-
-export default fileConfigs.map(fileConfig => Object.assign({}, baseConfig, {
-    input: 'src/' + fileConfig.inputFileName,
-    output: {
-        file: fileConfig.outputFileName,
-        format: 'cjs'
-    }
-}));
+}

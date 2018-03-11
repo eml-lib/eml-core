@@ -1,6 +1,6 @@
 {
   "name": "eml-core",
-  "version": "0.0.207",
+  "version": "0.0.208",
   "author": "Vlad Trushin",
   "description": "EML core",
   "homepage": "https://github.com/eml-lib/eml-core",
@@ -25,10 +25,11 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-3": "^6.24.1",
     "es6-symbol": "^3.1.1",
-    "rollup": "^0.55.0",
+    "rollup": "^0.56.5",
     "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.2"
+    "rollup-plugin-commonjs": "^9.0.0",
+    "rollup-plugin-node-resolve": "^3.2.0",
+    "xml-js": "^1.6.2"
   },
   "bugs": {
     "url": "https://github.com/eml-lib/eml-core/issues"
