@@ -29,11 +29,6 @@ export default {
             ],
         }),
     ],
-    external: [
-        // 'xml-js' needs
-        'stream',
-        'string_decoder'
-    ],
     watch: {
         include: 'src/**/*.js',
         exclude: 'node_modules/**'

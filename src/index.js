@@ -1,5 +1,5 @@
 import { dashedToCamel } from './utils/string';
-import xmlParser from 'xml-js';
+import parseXml from '@rgrove/parse-xml';
 import createElement from './create-element';
 import Fragment from './fragment';
 import render from './render';
@@ -18,15 +18,20 @@ function processTree(root, components = {}) {
             case 'element': {
                 if (rawContext) {
                     const Component = node.name;
+                    const children = 'children' in node
+                        ? node.children
+                            .filter(node => node.type !== 'text' || node.text.trim() !== '')
+                            .map(node => processNode(node, { rawContext: true }))
+                        : null;
 
                     return (
                         <Component {...node.attributes}>
-                            { 'elements' in node ? node.elements.map(node => processNode(node, { rawContext: true })) : null }
+                            { children }
                         </Component>
                     )
                 } else {
                     if (node.name === 'raw') {
-                        return processNode(node.elements[0], { rawContext: true });
+                        return processNode(node.children[0], { rawContext: true });
                     }
 
                     if (!(node.name in components)) {
@@ -37,21 +42,22 @@ function processTree(root, components = {}) {
                     const attrs = node.attributes ? Object.entries(node.attributes).reduce((acc, [key, value]) => (
                         { ...acc, [dashedToCamel(key)]: value }
                     ), {}) : null;
+                    const children = 'children' in node
+                        ? node.children
+                            .filter(node => node.type !== 'text' || node.text.trim() !== '')
+                            .map(processNode)
+                        : null;
 
                     return (
                         <Component {...attrs}>
-                            { 'elements' in node ? node.elements.map(processNode) : null }
+                            { children }
                         </Component>
                     )
                 }
             }
 
             case 'text': {
-                return node.text;
-            }
-
-            case 'cdata': {
-                return node.cdata;
+                return node.text.trim();
             }
 
             default: {
@@ -66,7 +72,12 @@ function processTree(root, components = {}) {
 export { createElement, Fragment };
 
 export function parse(xml, { components = {}, options = {} }) {
-    const tree = xmlParser.xml2js(xml);
+    const tree = parseXml(xml);
 
-    return tree ? render(processTree(tree.elements[0], components), options) : null;
+    if (tree) {
+        const processedTree = processTree(tree.children[0], components);
+        return render(processedTree, options);
+    }
+
+    return null;
 }

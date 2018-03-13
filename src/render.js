@@ -1,4 +1,4 @@
-import warning from 'warning';
+// import warning from 'warning';
 import Fragment from './fragment';
 import renderCss from './render-css';
 import renderHtml from './render-html';
@@ -12,7 +12,6 @@ export default (parentJsxEl, options) => {
     const cssList = [];
 
     function renderJsxEl(node) {
-
         if (node && node.type) {
             if (node.type === Fragment) {
                 return node.props.children.map(renderJsxEl);
@@ -29,15 +28,14 @@ export default (parentJsxEl, options) => {
 
                 return renderJsxEl(renderedNode);
             }
-
-        }
-
-        if (typeof node === 'string' || typeof node === 'number') {
-            return String(node);
         }
 
         if (node === null || node === undefined) {
             return '';
+        }
+
+        if (typeof node === 'string' || typeof node === 'number') {
+            return String(node);
         }
 
         const { children, ...attrs } = node.props;
