@@ -17,7 +17,7 @@ function processTree(root, components = {}) {
         switch (node.type) {
             case 'element': {
                 if (rawContext) {
-                    const Component = node.name;
+                    const elementName = node.name;
                     const children = 'children' in node
                         ? node.children
                             .filter(node => node.type !== 'text' || node.text.trim() !== '')
@@ -25,20 +25,22 @@ function processTree(root, components = {}) {
                         : null;
 
                     return (
-                        <Component {...node.attributes}>
+                        <elementName {...node.attributes}>
                             { children }
-                        </Component>
+                        </elementName>
                     )
                 } else {
                     if (node.name === 'raw') {
                         return processNode(node.children[0], { rawContext: true });
                     }
 
-                    if (!(node.name in components)) {
+                    const camelCasedName = dashedToCamel(node.name);
+
+                    if (!(camelCasedName in components)) {
                         throw new Error(`No component for ${node.name}`);
                     }
 
-                    const Component = components[node.name];
+                    const Component = components[camelCasedName];
                     const attrs = node.attributes ? Object.entries(node.attributes).reduce((acc, [key, value]) => (
                         { ...acc, [dashedToCamel(key)]: value }
                     ), {}) : null;
