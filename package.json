@@ -11,8 +11,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
+    "build": "rollup --config --environment BABEL_ENV:development",
+    "watch": "rollup --config --watch --environment BABEL_ENV:development",
+    "test": "jest",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -20,16 +21,16 @@
   },
   "devDependencies": {
     "@rgrove/parse-xml": "^1.1.1",
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^6.24.1",
-    "es6-symbol": "^3.1.1",
-    "rollup": "^0.56.5",
-    "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^9.0.0",
-    "rollup-plugin-node-resolve": "^3.2.0"
+    "jest": "^23.1.0",
+    "rollup": "^0.60.4",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-commonjs": "^9.1.3",
+    "rollup-plugin-node-resolve": "^3.3.0"
   },
   "bugs": {
     "url": "https://github.com/eml-lib/eml-core/issues"

@@ -1,4 +1,4 @@
-import { flatten } from './utils/array';
+import flatten from './helpers/array-flatten';
 
 export default (type, props, ...children) => ({
     _isElement: true,

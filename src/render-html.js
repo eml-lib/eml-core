@@ -1,6 +1,6 @@
 import renderStyle from './render-style';
 
-const attrsToLowerCase = ['cellPadding', 'cellSpacing'];
+const attrsToLowerCase = ['cellPadding', 'cellSpacing', 'colSpan', 'rowSpan'];
 
 function renderAttributes(obj) {
     if (!obj) {

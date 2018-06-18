@@ -1,85 +1,98 @@
-import { dashedToCamel } from './utils/string';
-import parseXml from '@rgrove/parse-xml';
-import createElement from './create-element';
+// import warning from 'warning';
+import flatten from './helpers/array-flatten';
 import Fragment from './fragment';
-import render from './render';
+import renderCss from './render-css';
+import renderHtml from './render-html';
 
-// import { inspect } from 'util';
-// function log(object) {
-//     return console.log(inspect(object, {
-//         colors: true,
-//         depth: Infinity
-//     }));
-// }
+function createNode(tagName, attrs = null, children = []) {
+    return { tagName, attrs, children };
+}
 
-function processTree(root, components = {}) {
-    function processNode(node, { rawContext = false } = {}) {
-        switch (node.type) {
-            case 'element': {
-                if (rawContext) {
-                    const elementName = node.name;
-                    const children = 'children' in node
-                        ? node.children
-                            .filter(node => node.type !== 'text' || node.text.trim() !== '')
-                            .map(node => processNode(node, { rawContext: true }))
-                        : null;
+console.log(2);
 
-                    return (
-                        <elementName {...node.attributes}>
-                            { children }
-                        </elementName>
-                    )
-                } else {
-                    if (node.name === 'raw') {
-                        return processNode(node.children[0], { rawContext: true });
-                    }
+export default (parentJsxEl) => {
+    // const passedComponents = [];
+    // const cssList = [];
 
-                    const camelCasedName = dashedToCamel(node.name);
-
-                    if (!(camelCasedName in components)) {
-                        throw new Error(`No component for ${node.name}`);
-                    }
-
-                    const Component = components[camelCasedName];
-                    const attrs = node.attributes ? Object.entries(node.attributes).reduce((acc, [key, value]) => (
-                        { ...acc, [dashedToCamel(key)]: value }
-                    ), {}) : null;
-                    const children = 'children' in node
-                        ? node.children
-                            .filter(node => node.type !== 'text' || node.text.trim() !== '')
-                            .map(processNode)
-                        : null;
-
-                    return (
-                        <Component {...attrs}>
-                            { children }
-                        </Component>
-                    )
-                }
-            }
-
-            case 'text': {
-                return node.text.trim();
-            }
-
-            default: {
-                throw new Error(`Unknown node type ${node.type}`);
-            }
+    function renderJsx(nodeOrNodes) {
+        if (nodeOrNodes === null || nodeOrNodes === undefined) {
+            return '';
         }
+
+        if (typeof nodeOrNodes === 'string' || typeof nodeOrNodes === 'number') {
+            return String(nodeOrNodes);
+        }
+
+        if (nodeOrNodes.type === Fragment) {
+            return nodeOrNodes.props.children.reduce((acc, child) => {
+                console.log(child);
+                return renderJsx(child);
+            }, []);
+        }
+
+        // Component
+        if (typeof nodeOrNodes.type === 'function') {
+            const fn = nodeOrNodes.type;
+            const renderedNode = fn(nodeOrNodes.props);
+
+            // if ('css' in fn && !passedComponents.includes(fn)) {
+            //     passedComponents.push(fn);
+            //     cssList.push(typeof fn.css === 'function' ? fn.css(options) : fn.css);
+            // }
+
+            return renderJsx(renderedNode);
+        }
+
+        const { children, ...attrs } = nodeOrNodes.props;
+        const renderedChildren = children.reduce((acc, child) => {
+            const renderedChild = renderJsx(child);
+
+            return Array.isArray(renderedChild)
+                ? [...acc, ...flatten(renderedChild, Infinity)]
+                : [...acc, renderedChild]
+        }, []);
+
+        return {
+            tagName: nodeOrNodes.type,
+            attrs,
+            children: renderedChildren
+        };
     }
 
-    return processNode(root);
-}
+    const content = renderJsx(parentJsxEl);
 
-export { createElement, Fragment };
+    // return `
+    // 	<html
+    // 		xmlns="http://www.w3.org/1999/xhtml"
+    // 		xmlns:v="urn:schemas-microsoft-com:vml"
+    // 		xmlns:o="urn:schemas-microsoft-com:office:office">
+    // 		<head>
+    // 			<meta charset="UTF-8" />
+    // 			<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    // 			<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" />
+    // 			<style>
+    //
+    // 		</style>
+    // 	</head>
+    // 	{ content }
+    // 	</html>
+    // `;
 
-export function parse(xml, { components = {}, options = {} }) {
-    const tree = parseXml(xml);
-
-    if (tree) {
-        const processedTree = processTree(tree.children[0], components);
-        return render(processedTree, options);
-    }
-
-    return null;
-}
+    return renderHtml(
+        createNode('html', {
+            'xmlns':    'http://www.w3.org/1999/xhtml',
+            'xmlns:v':  'urn:schemas-microsoft-com:vml',
+            'xmlns:o':  'urn:schemas-microsoft-com:office:office'
+        }, [
+            createNode('head', null, [
+                createNode('meta', { charset: 'utf-8' }),
+                createNode('meta', { 'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8' }),
+                createNode('meta', { name: 'viewport', content: 'width=device-width; initial-scale=1.0; maximum-scale=1.0;' }),
+                createNode('style', { type: 'text/css' }, [
+                    // renderCss(cssList)
+                ])
+            ]),
+            content
+        ])
+    );
+};

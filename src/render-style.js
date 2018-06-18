@@ -1,4 +1,4 @@
-import { camelToDashed } from "./utils/string";
+import { camelToDashed } from "./helpers/string";
 
 export default style => (
     Object.entries(style)

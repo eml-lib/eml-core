@@ -1,0 +1,32 @@
+{
+  "presets": [
+    "stage-3"
+  ],
+  "plugins": [
+    ["transform-react-jsx", { "pragma": "createElement" }]
+  ],
+  "env": {
+    "development": {
+      "plugins": [
+        "external-helpers"
+      ],
+      "presets": [
+        ["env", {
+          "modules": false,
+          "targets": {
+            "node": "current"
+          }
+        }]
+      ]
+    },
+    "test": {
+      "presets": [
+        ["env", {
+          "targets": {
+            "node": "current"
+          }
+        }]
+      ]
+    }
+  }
+}
