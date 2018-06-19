@@ -2,6 +2,8 @@
 import commonJs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
+import builtins from 'rollup-plugin-node-builtins';
+import globals from 'rollup-plugin-node-globals';
 // import inject from 'rollup-plugin-inject';
 
 export default {
@@ -20,7 +22,9 @@ export default {
         }),
         babel({
             exclude: 'node_modules/**'
-        })
+        }),
+        // globals(),
+        // builtins()
     ],
     watch: {
         include: 'src/**/*.js',
