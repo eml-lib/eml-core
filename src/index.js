@@ -1,3 +1,9 @@
-export { default as render } from './render';
-export { default as createElement } from './create-element';
-export { default as Fragment } from './fragment';
+import render from './render';
+import createElement from './create-element';
+import Fragment from './fragment';
+
+export {
+	render,
+	createElement,
+	Fragment
+};
