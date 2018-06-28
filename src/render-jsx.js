@@ -1,6 +1,8 @@
 import flatten from './helpers/array-flatten';
 import Fragment from './fragment';
 
+const attrsToLowerCase = ['cellPadding', 'cellSpacing'];
+
 export default function renderJsx(nodeOrNodes) {
 	if (nodeOrNodes === null || nodeOrNodes === undefined) {
 		return '';
@@ -59,10 +61,15 @@ export default function renderJsx(nodeOrNodes) {
 
 	return {
 		tagName: nodeOrNodes.type,
-		attrs: Object.entries(attrs).reduce((acc, [ key, value ]) => ({
-			...acc,
-			[key.toLowerCase()]: String(value)
-		}), {}),
+		attrs: Object.entries(attrs).reduce((acc, [ key, value ]) => {
+			const attr = attrsToLowerCase.includes(key) ? key.toLowerCase() : key;
+			const attrValue = value ? String(value) : null;
+
+			return {
+				...acc,
+				[attr]: attrValue
+			}
+		}, {}),
 		children: renderedChildren
 	};
 }
