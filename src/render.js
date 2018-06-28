@@ -30,13 +30,7 @@ export default (parentJsxEl) => {
         }
 
         if (nodeOrNodes.type === Fragment) {
-            return nodeOrNodes.props.children.reduce((acc, child) => {
-                const renderedChild = renderJsx(child);
-
-                return Array.isArray(renderedChild)
-                    ? [...acc, ...renderedChild]
-                    : [...acc, renderedChild]
-            }, []);
+            return nodeOrNodes.props.children.map(renderJsx);
         }
 
         // Component
@@ -51,35 +45,36 @@ export default (parentJsxEl) => {
 
             return renderJsx(renderedNode);
         }
-
         const { children, ...attrs } = nodeOrNodes.props;
+
+      // const { children, ...attrs } = nodeOrNodes.props;
+      //
+      // return {
+      //     tagName: nodeOrNodes.type,
+      //     attrs,
+      //     children: children.reduce((acc, child) => {
+      //         const renderedChild = renderJsx(child);
+      //
+      //         return Array.isArray(renderedChild)
+      //             ? [...acc, ...renderedChild]
+      //             : [...acc, renderedChild]
+      //     }, [])
+      // }
+
+      // Element
+      const renderedChildren = children.reduce((acc, child) => {
+            const renderedChild = renderJsx(child);
+
+            return Array.isArray(renderedChild)
+                ? [...acc, ...flatten(renderedChild, Infinity)]
+                : [...acc, renderedChild]
+        }, []);
 
         return {
             tagName: nodeOrNodes.type,
             attrs,
-            children: children.reduce((acc, child) => {
-                const renderedChild = renderJsx(child);
-
-                return Array.isArray(renderedChild)
-                    ? [...acc, ...renderedChild]
-                    : [...acc, renderedChild]
-            }, [])
-        }
-
-        // const { children, ...attrs } = nodeOrNodes.props;
-        // const renderedChildren = children.reduce((acc, child) => {
-        //     const renderedChild = renderJsx(child);
-        //
-        //     return Array.isArray(renderedChild)
-        //         ? [...acc, ...flatten(renderedChild, Infinity)]
-        //         : [...acc, renderedChild]
-        // }, []);
-        //
-        // return {
-        //     tagName: nodeOrNodes.type,
-        //     attrs,
-        //     children: renderedChildren
-        // };
+            children: renderedChildren
+        };
     }
 
     const content = renderJsx(parentJsxEl);
