@@ -1,19 +1,15 @@
 import renderStyle from './render-style';
 
-const attrsToLowerCase = ['cellPadding', 'cellSpacing', 'colSpan', 'rowSpan'];
-
 function renderAttributes(obj) {
     if (!obj) {
         return '';
     }
 
     return Object.entries(obj)
-        .filter(([attr, value]) => !['', null, undefined].includes(value))
+        .filter(([attr, value]) => ![null, undefined].includes(value))
         .map(([attr, value]) => {
             if (attr === 'className') {
                 attr = 'class';
-            } else if (attrsToLowerCase.includes(attr)) {
-                attr = attr.toLowerCase();
             } else if (attr === 'style' && typeof value === 'object') {
                 value = renderStyle(value);
             }
@@ -23,7 +19,6 @@ function renderAttributes(obj) {
         .join(' ')
 }
 
-const doctype = '<!DOCTYPE html>';
 const emptyElements = ['meta', 'link', 'hr', 'img', 'br', 'wbr', 'input'];
 
 function renderTag(config, depth = 0) {
@@ -35,7 +30,7 @@ function renderTag(config, depth = 0) {
 
     const { tagName, attrs, children } = config;
     const attrsText = renderAttributes(attrs);
-    const tagNameWithAttrs = [tagName, attrsText].filter(Boolean).join(' ');
+    const tagNameWithAttrs = attrsText ? tagName + ' ' + attrsText : tagName;
 
     if (emptyElements.includes(tagName)) {
         const tag = `<${tagNameWithAttrs} />`;
@@ -49,8 +44,4 @@ function renderTag(config, depth = 0) {
     }
 }
 
-export default parentConfig => (
-    doctype +
-    '\n' +
-    renderTag(parentConfig)
-);
+export default parentConfig => renderTag(parentConfig);

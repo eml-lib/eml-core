@@ -56,6 +56,7 @@ export default function renderJsx(nodeOrNodes) {
 			? [...acc, ...renderedChild]
 			: [...acc, renderedChild]
 	}, []);
+
 	return {
 		tagName: nodeOrNodes.type,
 		attrs: Object.entries(attrs).reduce((acc, [ key, value ]) => ({
