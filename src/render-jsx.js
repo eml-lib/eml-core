@@ -1,7 +1,7 @@
 import flatten from './helpers/array-flatten';
 import Fragment from './fragment';
 
-const attrsToLowerCase = ['cellPadding', 'cellSpacing'];
+const attrsToLowerCase = ['cellPadding', 'cellSpacing', 'colSpan', 'rowSpan'];
 
 export default function renderJsx(nodeOrNodes) {
 	if (nodeOrNodes === null || nodeOrNodes === undefined) {
@@ -63,12 +63,7 @@ export default function renderJsx(nodeOrNodes) {
 		tagName: nodeOrNodes.type,
 		attrs: Object.entries(attrs).reduce((acc, [ key, value ]) => {
 			const attr = attrsToLowerCase.includes(key) ? key.toLowerCase() : key;
-			const attrValue = value ? String(value) : null;
-
-			return {
-				...acc,
-				[attr]: attrValue
-			}
+			return { ...acc, [attr]: value }
 		}, {}),
 		children: renderedChildren
 	};

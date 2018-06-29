@@ -12,9 +12,7 @@ describe('Element', () => {
 	it('one level', () => {
 		expect(
 			renderJsx(
-				<div>
-					1
-				</div>
+				<div>1</div>
 			)
 		).toEqual(
 			{
@@ -52,13 +50,13 @@ describe('Element', () => {
 			)
 		).toEqual(
 			el('table', {
-				cellpadding: '0',
-				cellspacing: '0'
+				cellpadding: 0,
+				cellspacing: 0
 			}, [
 				el('tr', null, [
 					el('td', {
-						colspan: '2',
-						rowspan: '3'
+						colspan: 2,
+						rowspan: 3
 					})
 				])
 			])
@@ -118,7 +116,9 @@ describe('Fragment', () => {
 				<Fragment>
 					<Fragment>
 						<Fragment>1</Fragment>
-						<Fragment>2</Fragment>
+						<Fragment>
+							<Fragment>2</Fragment>
+						</Fragment>
 					</Fragment>
 					<Fragment>
 						<Fragment>3</Fragment>
