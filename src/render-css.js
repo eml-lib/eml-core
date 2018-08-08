@@ -1,14 +1,17 @@
 import renderStyle from './render-style';
 
-export default (cssObjList = []) => (
-    cssObjList.map(cssObj => {
-        if (typeof cssObj === 'string') {
-            return cssObj;
-        }
+const renderCss = cssObj => Object.entries(cssObj).map(
+	([rule, declBlock]) => {
+		if (rule.startsWith('@')) {
+			const body = Object.entries(declBlock).map(
+				([ selector, value ]) => '\t' + selector + ' {\n\t\t' + renderStyle(value) + '\n\t}'
+			).join('\n');
 
-        return Object.entries(cssObj).map(([selector, declBlock]) => (
-            selector + ' { ' + renderStyle(declBlock) + ' }\n'
-        )).join('');
+			return rule + ' {\n' + body + '\n}';
+		} else {
+			return rule + ' {\n\t' + renderStyle(declBlock) + '\n}'
+		}
+	}
+).join('\n');
 
-    }).join('')
-);
+export default renderCss;

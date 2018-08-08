@@ -1,47 +1,28 @@
 import renderHtml from './render-html';
 
-describe('Common', () => {
-	it('Self-closing elements', () => {
-		expect(
-			renderHtml(
-				{ tagName: 'div', children: [
-					{ tagName: 'br' },
-					{ tagName: 'input' },
-					{ tagName: 'img', attrs: { src: '' } }
-				] }
-			)
-		).toBe(
-`<div>
-	<br />
-	<input />
-	<img src="" />
-</div>
-`
-		);
-	});
+it('Self-closing elements', () => {
+	expect(
+		renderHtml(
+			{ tagName: 'div', children: [
+				{ tagName: 'br' },
+				{ tagName: 'input' },
+				{ tagName: 'img', attrs: { src: '' } }
+			] }
+		)
+	).toMatchSnapshot();
+});
 
-	it('Deep', () => {
-		expect(
-			renderHtml(
+it('Deep', () => {
+	expect(
+		renderHtml(
+			{ tagName: 'div', children: [
 				{ tagName: 'div', children: [
+					{ tagName: 'div', children: [ 123 ] },
 					{ tagName: 'div', children: [
-						{ tagName: 'div', children: [ 123 ] },
-						{ tagName: 'div', children: [ 456 ] }
+						'Многострочный\nтекст,\nкоторый\nдолжен\nтабулироваться'
 					] }
 				] }
-			)
-		).toBe(
-`<div>
-	<div>
-		<div>
-			123
-		</div>
-		<div>
-			456
-		</div>
-	</div>
-</div>
-`
+			] }
 		)
-	})
+	).toMatchSnapshot()
 });

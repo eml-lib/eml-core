@@ -1,0 +1,118 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Arrays array in arrays 1`] = `
+Array [
+  "1",
+]
+`;
+
+exports[`Arrays arrays in arrays 1`] = `
+Array [
+  "1",
+  "2",
+  "3",
+]
+`;
+
+exports[`Element attributes 1`] = `
+Object {
+  "attrs": Object {
+    "cellpadding": 0,
+    "cellspacing": 0,
+  },
+  "children": Array [
+    Object {
+      "attrs": Object {},
+      "children": Array [
+        Object {
+          "attrs": Object {
+            "colspan": 2,
+            "rowspan": 3,
+          },
+          "children": Array [],
+          "tagName": "td",
+        },
+      ],
+      "tagName": "tr",
+    },
+  ],
+  "tagName": "table",
+}
+`;
+
+exports[`Element one level 1`] = `
+Object {
+  "attrs": Object {},
+  "children": Array [
+    "1",
+  ],
+  "tagName": "div",
+}
+`;
+
+exports[`Element two levels 1`] = `
+Object {
+  "attrs": Object {},
+  "children": Array [
+    Object {
+      "attrs": Object {},
+      "children": Array [
+        "1",
+      ],
+      "tagName": "div",
+    },
+    Object {
+      "attrs": Object {},
+      "children": Array [
+        "2",
+      ],
+      "tagName": "div",
+    },
+  ],
+  "tagName": "div",
+}
+`;
+
+exports[`Fragment 2 levels 1`] = `
+Array [
+  "1",
+  "2",
+]
+`;
+
+exports[`Fragment deep levels 1`] = `
+Array [
+  "1",
+  "2",
+  "3",
+  "4",
+]
+`;
+
+exports[`Fragment flat 1`] = `
+Array [
+  "1",
+]
+`;
+
+exports[`Mixed fragments with arrays 1`] = `
+Array [
+  Object {
+    "attrs": Object {},
+    "children": Array [
+      "1",
+      "2",
+    ],
+    "tagName": "div",
+  },
+  Object {
+    "attrs": Object {},
+    "children": Array [
+      "3",
+      "4",
+    ],
+    "tagName": "div",
+  },
+  "[[5]]",
+]
+`;

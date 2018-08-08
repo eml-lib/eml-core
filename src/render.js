@@ -1,3 +1,4 @@
+import renderCss from './render-css';
 import renderHtml from './render-html';
 import renderJsx from './render-jsx';
 
@@ -9,23 +10,32 @@ import renderJsx from './render-jsx';
 //     }));
 // }
 
-const wrapWithHtmlString = body => (
-`<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" />
-		<style type="text/css">
-			{/*renderCss(cssList)*/}
-		</style>
-	</head>
-	${body}
-</html>`
-);
+const injectCss = (html, css) => {
+	const regexp = /(?=<\/head>)/i;
+	const hasHead = regexp.test(html);
 
-export default parentJsxEl => {
-	return wrapWithHtmlString(
-		renderHtml(renderJsx(parentJsxEl))
-	);
+	if (css) {
+		if (hasHead) {
+			const cssString = renderCss(css);
+			const styleTag = renderHtml({
+				tagName: 'style',
+				attrs: {
+					type: 'text/css'
+				},
+				children: [cssString]
+			}, 1);
+			return html.replace(regexp, styleTag);
+		} else {
+			throw new Error('There is no `head` tag in html');
+		}
+	}
+
+	return html;
+};
+
+export default (jsxEl, config = {}) => {
+	const { css, html } = renderJsx(jsxEl);
+	const renderedHtml = renderHtml(html);
+
+	return injectCss(renderedHtml, css);
 };

@@ -1,47 +1,40 @@
-import renderStyle from './render-style';
+import renderAttributes from './render-attributes';
 
-function renderAttributes(obj) {
-    if (!obj) {
-        return '';
-    }
+const defaultEmptyElements = ['meta', 'link', 'hr', 'img', 'br', 'wbr', 'input'];
 
-    return Object.entries(obj)
-        .filter(([attr, value]) => ![null, undefined].includes(value))
-        .map(([attr, value]) => {
-            if (attr === 'className') {
-                attr = 'class';
-            } else if (attr === 'style' && typeof value === 'object') {
-                value = renderStyle(value);
-            }
+// const maxInlineTextLength = 100;
 
-            return `${attr}="${value}"`;
-        })
-        .join(' ')
+export default function renderTag(config, depth = 0) {
+	const tab = '\t'.repeat(depth);
+
+	if (Array.isArray(config)) {
+		return config.map(configItem => renderTag(configItem, depth)).join('');
+	}
+
+	if (typeof config !== 'object') {
+		let value;
+
+		if (typeof config === 'string') {
+			value = config.split('\n').join('\n' + tab);
+		} else {
+			value = config;
+		}
+
+		return tab + value + '\n';
+	}
+
+	const { tagName, attrs, children, emptyElement = false } = config;
+	const attrsText = renderAttributes(attrs);
+	const tagNameWithAttrs = attrsText ? tagName + ' ' + attrsText : tagName;
+
+	if (defaultEmptyElements.includes(tagName) || emptyElement) {
+		const tag = `<${tagNameWithAttrs} />`;
+		return tab + tag + '\n';
+	} else {
+		const openingTag = `<${tagNameWithAttrs}>`;
+		const closingTag = `</${tagName}>`;
+		const contentHtml = children.map(config => renderTag(config, depth + 1)).join('');
+
+		return tab + openingTag + '\n' + contentHtml + tab + closingTag + '\n';
+	}
 }
-
-const emptyElements = ['meta', 'link', 'hr', 'img', 'br', 'wbr', 'input'];
-
-function renderTag(config, depth = 0) {
-    const tab = '\t'.repeat(depth);
-
-    if (typeof config !== 'object') {
-        return tab + config + '\n';
-    }
-
-    const { tagName, attrs, children } = config;
-    const attrsText = renderAttributes(attrs);
-    const tagNameWithAttrs = attrsText ? tagName + ' ' + attrsText : tagName;
-
-    if (emptyElements.includes(tagName)) {
-        const tag = `<${tagNameWithAttrs} />`;
-        return tab + tag + '\n';
-    } else {
-        const openingTag = `<${tagNameWithAttrs}>`;
-        const closingTag = `</${tagName}>`;
-        const contentHtml = children.map(config => renderTag(config, depth + 1)).join('');
-
-        return tab + openingTag + '\n' + contentHtml + tab + closingTag + '\n';
-    }
-}
-
-export default parentConfig => renderTag(parentConfig);

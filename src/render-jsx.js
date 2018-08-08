@@ -1,70 +1,165 @@
+import merge from 'deepmerge';
+import propTypes from 'prop-types';
+import processObjectEntries from './helpers/process-object-entries';
 import flatten from './helpers/array-flatten';
 import Fragment from './fragment';
+import parseEmlStyles from './parse-eml-styles';
+import replaceAttrFormat from './replace-attr-format';
 
-const attrsToLowerCase = ['cellPadding', 'cellSpacing', 'colSpan', 'rowSpan'];
+// const DEV = typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production';
+const DEV = true;
 
-export default function renderJsx(nodeOrNodes) {
-	if (nodeOrNodes === null || nodeOrNodes === undefined) {
-		return '';
+class JsxRenderer {
+	constructor(nodeOrNodes) {
+		this.idIndex = 0;
+
+		return this.render(nodeOrNodes);
 	}
 
-	if (typeof nodeOrNodes === 'string' || typeof nodeOrNodes === 'number') {
-		return String(nodeOrNodes);
+	render(nodeOrNodes) {
+		const ctor = this.constructor;
+
+		const rendered = (
+			ctor.renderNull(nodeOrNodes)
+			|| ctor.renderStringOrNumber(nodeOrNodes)
+			|| this.renderArray(nodeOrNodes)
+			|| this.renderFragment(nodeOrNodes)
+			|| this.renderElement(nodeOrNodes)
+			|| this.renderComponent(nodeOrNodes)
+		);
+
+		if (rendered) {
+			return rendered;
+		} else {
+			throw new Error('Incorrect element type');
+		}
 	}
 
-	if (Array.isArray(nodeOrNodes)) {
-		return nodeOrNodes.reduce((acc, child) => {
-			const renderedChild = renderJsx(child);
-			return Array.isArray(renderedChild)
-				? [...acc, ...flatten(renderedChild, Infinity)]
-				: [...acc, renderedChild]
-		}, []);
+	static getId(index) {
+		return 'el-' + index;
 	}
 
-	if (!('type' in nodeOrNodes)) {
-		throw new Error('Incorrect element type');
+	static renderNull(nodeOrNodes) {
+		return nodeOrNodes === null || nodeOrNodes === undefined
+			? { css: null, html: '' }
+			: null
 	}
 
-	// Fragment
-	if (nodeOrNodes.type === Fragment) {
-		// return nodeOrNodes.props.children.map(renderJsx);
-		return nodeOrNodes.props.children.reduce((acc, child) => {
-			const renderedChild = renderJsx(child);
-
-			return Array.isArray(renderedChild)
-				? [...acc, ...renderedChild]
-				: [...acc, renderedChild]
-		}, []);
-	}
-
-	// Component
-	if (typeof nodeOrNodes.type === 'function') {
-		const fn = nodeOrNodes.type;
-		const renderedNode = fn(nodeOrNodes.props);
-
-		// if ('css' in fn && !passedComponents.includes(fn)) {
-		//     passedComponents.push(fn);
-		//     cssList.push(typeof fn.css === 'function' ? fn.css(options) : fn.css);
-		// }
-
-		return renderJsx(renderedNode);
-	}
-
-	// Element
-	const { children, ...attrs } = nodeOrNodes.props;
-	const renderedChildren = children.reduce((acc, child) => {
-		const renderedChild = renderJsx(child);
-		return Array.isArray(renderedChild)
-			? [...acc, ...renderedChild]
-			: [...acc, renderedChild]
-	}, []);
-
-	return {
-		tagName: nodeOrNodes.type,
-		attrs: Object.entries(attrs).reduce((acc, [ key, value ]) => {
-			const attr = attrsToLowerCase.includes(key) ? key.toLowerCase() : key;
-			return { ...acc, [attr]: value }
-		}, {}),
-		children: renderedChildren
+	static renderStringOrNumber(nodeOrNodes) {
+		return typeof nodeOrNodes === 'string' || typeof nodeOrNodes === 'number'
+			? { css: null, html: String(nodeOrNodes) }
+			: null
 	};
+
+	renderArray(nodeOrNodes) {
+		return Array.isArray(nodeOrNodes)
+			? nodeOrNodes.reduce((acc, child) => {
+				const renderedChild = this.render(child);
+				return {
+					css: { ...acc.css, ...renderedChild.css },
+					html: Array.isArray(renderedChild.html)
+						? [...acc.html, ...flatten(renderedChild.html, Infinity)]
+						: [...acc.html, renderedChild.html]
+				}
+			}, { css: null, html: [] })
+			: null;
+	}
+
+	renderElement(nodeOrNodes) {
+		if (nodeOrNodes && typeof nodeOrNodes.type === 'string') {
+			const { children, ...attrs } = nodeOrNodes.props;
+			let css;
+
+			if ('style' in attrs) {
+				const nextId = this.constructor.getId(this.idIndex + 1);
+				const { mediaCss, inlineStyles } = parseEmlStyles(attrs.style, nextId);
+
+				if (Object.keys(inlineStyles).length > 0) {
+					attrs.style = inlineStyles;
+				}
+
+				if (Object.keys(mediaCss).length > 0) {
+					this.idIndex++;
+					css = mediaCss;
+					attrs.id = this.constructor.getId(this.idIndex);
+				}
+			}
+
+			const renderedChildren = children.reduce((acc, child) => {
+				const renderedChild = this.render(child);
+				return {
+					css: { ...acc.css, ...renderedChild.css },
+					html: Array.isArray(renderedChild.html)
+						? [...acc.html, ...renderedChild.html]
+						: [...acc.html, renderedChild.html]
+				}
+			}, { css: null, html: [] });
+
+			return {
+				css: css ? merge(css, renderedChildren.css) : renderedChildren.css,
+				html: {
+					tagName: nodeOrNodes.type,
+					attrs: processObjectEntries(attrs, (key, value) => [replaceAttrFormat(key), value]),
+					children: renderedChildren.html
+				}
+			};
+		}
+
+		return null;
+	}
+
+	renderFragment(nodeOrNodes) {
+		if (!nodeOrNodes || nodeOrNodes.type !== Fragment) {
+			return null;
+		}
+
+		return nodeOrNodes.props.children.reduce((acc, child) => {
+			const renderedChild = this.render(child);
+			return {
+				css: { ...acc.css, ...renderedChild.css },
+				html: Array.isArray(renderedChild.html)
+					? [...acc.html, ...renderedChild.html]
+					: [...acc.html, renderedChild.html]
+			};
+		}, { css: null, html: [] })
+	}
+
+	renderComponent(nodeOrNodes) {
+		if (!nodeOrNodes || !nodeOrNodes.type || typeof nodeOrNodes.type !== 'function') {
+			return null;
+		}
+
+		const ctor = nodeOrNodes.type;
+		const componentName = ctor.name || 'UnknownComponent';
+		const isClass = ctor.prototype && ctor.prototype.isComponent;
+
+		if (DEV && 'propTypes' in ctor) {
+			propTypes.checkPropTypes(ctor.propTypes, nodeOrNodes.props, 'prop', componentName);
+		}
+
+		const props = 'defaultProps' in ctor
+			? { ...ctor.defaultProps, ...nodeOrNodes.props }
+			: nodeOrNodes.props;
+
+		const renderedNode = isClass
+			? (new ctor(props)).render()
+			: ctor(props);
+
+		const rendered = this.render(renderedNode);
+
+		return {
+			css: {
+				...ctor.css,
+				...rendered.css
+			} ,
+			html: rendered.html
+			// html: [
+			// 	`<!-- <${componentName}> -->`,
+			// 	rendered.html,
+			// 	`<!-- </${componentName}> -->`
+			// ]
+		};
+	}
 }
+
+export default nodeOrNodes => new JsxRenderer(nodeOrNodes);

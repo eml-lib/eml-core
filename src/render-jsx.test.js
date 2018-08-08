@@ -1,165 +1,83 @@
+import renderHtml from './render-html';
 import renderJsx from './render-jsx';
 import createElement from './create-element';
+import Component from './component';
 import Fragment from './fragment';
 
-const el = (tagName, attrs, children = []) => ({
-	tagName,
-	attrs: attrs ? attrs : {},
-	children
+import { inspect } from 'util';
+function log(object) {
+    return console.log(inspect(object, {
+        colors: true,
+        depth: Infinity
+    }));
+}
+
+const B = props => {
+	return (
+		<div className="b">
+			1
+		</div>
+	);
+};
+B.css = {
+	'.b': { border: '1px solid green' }
+};
+B.styles = () => ({
+	b: 2
 });
 
-describe('Element', () => {
-	it('one level', () => {
-		expect(
-			renderJsx(
-				<div>1</div>
-			)
-		).toEqual(
-			{
-				tagName: 'div',
-				attrs: {},
-				children: ['1'],
+
+class A extends Component {
+	render() {
+		const { size } = this.props;
+
+		return (
+			<div className="block">
+				{ [1, 2, 3].map(i => (
+					<div className="block__body">
+						<B />
+					</div>
+				)) }
+			</div>
+		);
+	}
+
+	static css = {
+		'.block': {
+			border: '1px solid red'
+		}
+	};
+
+	static styles = ({ size }) => ({
+		'@media (max-width: 600px)': {
+			'.block_body': {
+				width: 100 / size + 'px'
 			}
-		)
+		}
 	});
 
-	it('two levels', () => {
-		expect(
-			renderJsx(
-				<div>
-					<div>1</div>
-					<div>2</div>
-				</div>
-			)
-		).toEqual(
-			el('div', null, [
-				el('div', null, ['1']),
-				el('div', null, ['2'])
-			])
-		)
-	});
+	// static css = {
+	// 	a: { border: '1px solid red' },
+	// 	a_css: { left: 0, top: 0 }
+	// };
+    //
+	// static styles = () => ({
+	// 	a: 1
+	// });
+}
 
-	it('attributes', () => {
-		expect(
-			renderJsx(
-				<table cellPadding={0} cellSpacing={0}>
-					<tr>
-						<td colSpan={2} rowSpan={3} />
-					</tr>
-				</table>
-			)
-		).toEqual(
-			el('table', {
-				cellpadding: 0,
-				cellspacing: 0
-			}, [
-				el('tr', null, [
-					el('td', {
-						colspan: 2,
-						rowspan: 3
-					})
-				])
-			])
-		)
-	});
-});
+// const { css, styles, html } = ;
+//
+// log({
+// 	css,
+// 	styles,
+// 	html
+// });
 
-describe('Arrays', () => {
-	it('array in arrays', () => {
-		expect(
-			renderJsx(
-				[[[[[[[[[1]]]]]]]]]
-			)
-		).toEqual(
-			['1']
+it('Self-closing elements', () => {
+	expect(
+		renderJsx(
+			<Fragment>1</Fragment>
 		)
-	});
-
-	it('arrays in arrays', () => {
-		expect(
-			renderJsx(
-				[1, [2], [[3]]]
-			)
-		).toEqual(
-			['1', '2', '3']
-		)
-	});
-});
-
-describe('Fragment', () => {
-	it('flat', () => {
-		expect(
-			renderJsx(
-				<Fragment>1</Fragment>
-			)
-		).toEqual(
-			['1']
-		)
-	});
-
-	it('2 levels', () => {
-		expect(
-			renderJsx(
-				<Fragment>
-					<Fragment>1</Fragment>
-					<Fragment>2</Fragment>
-				</Fragment>
-			)
-		).toEqual(
-			['1', '2']
-		)
-	});
-
-	it('deep levels', () => {
-		expect(
-			renderJsx(
-				<Fragment>
-					<Fragment>
-						<Fragment>1</Fragment>
-						<Fragment>
-							<Fragment>2</Fragment>
-						</Fragment>
-					</Fragment>
-					<Fragment>
-						<Fragment>3</Fragment>
-						<Fragment>4</Fragment>
-					</Fragment>
-				</Fragment>
-			)
-		).toEqual(
-			['1', '2', '3', '4']
-		)
-	});
-});
-
-describe('Mixed', () => {
-	it('fragments with arrays', () => {
-		expect(
-			renderJsx(
-				[
-					<div>
-						<Fragment>1</Fragment>
-						<Fragment>2</Fragment>
-					</div>,
-					<div>
-						<Fragment>3</Fragment>
-						<Fragment>4</Fragment>
-					</div>,
-					<Fragment>
-						[[5]]
-					</Fragment>
-				]
-			)
-		).toEqual(
-			[
-				el('div', null, [
-					'1', '2'
-				]),
-				el('div', null, [
-					'3', '4'
-				]),
-				'[[5]]'
-			]
-		)
-	});
+	).toEqual({});
 });

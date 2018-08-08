@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Smthng 1`] = `
+"table {
+	border: 1px solid red
+}
+
+@media (max-width: 100px) {
+	.a, .b, .c {
+		width: 100px; height: 200px
+	}
+	.rule2 {
+		height: 100px; background-color: red; -webkit-flex: 1
+	}
+}
+"
+`;

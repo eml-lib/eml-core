@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Deep 1`] = `
+"<div>
+	<div>
+		<div>
+			123
+		</div>
+		<div>
+			Многострочный
+			текст,
+			который
+			должен
+			табулироваться
+		</div>
+	</div>
+</div>
+"
+`;
+
+exports[`Self-closing elements 1`] = `
+"<div>
+	<br />
+	<input />
+	<img src=\\"\\" />
+</div>
+"
+`;
