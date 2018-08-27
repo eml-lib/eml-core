@@ -70,7 +70,7 @@ class JsxRenderer {
 			const { children, ...attrs } = nodeOrNodes.props;
 			let css;
 
-			if ('style' in attrs) {
+			if (attrs.style) {
 				const nextId = this.constructor.getId(this.idIndex + 1);
 				const { mediaCss, inlineStyles } = parseEmlStyles(attrs.style, nextId);
 
