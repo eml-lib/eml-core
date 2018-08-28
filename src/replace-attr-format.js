@@ -20,4 +20,4 @@ export default attr => {
 	} else {
 		return attr;
 	}
-}
+};

@@ -1,5 +1,5 @@
 import renderJsx from './render-jsx';
-import createElement from './create-element';
+import { createElement } from './element';
 import Fragment from './fragment';
 
 describe('Element', () => {

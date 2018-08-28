@@ -5,8 +5,8 @@ export default class Component {
 
 	render() {
 		const componentName = this.constructor.name || 'UnknownComponent';
-		throw new Error(`${componentName}: No "render" method found in the returned component`);
+		throw new Error(`${componentName}: No \`render\` method found in the returned component`);
 	}
-}
+};
 
 Component.prototype.isComponent = true;

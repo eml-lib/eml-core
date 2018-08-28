@@ -17,4 +17,4 @@ export default (styles, elId) => {
 	});
 
 	return { mediaCss, inlineStyles };
-}
+};

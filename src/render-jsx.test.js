@@ -1,16 +1,16 @@
 import renderHtml from './render-html';
 import renderJsx from './render-jsx';
-import createElement from './create-element';
+import { createElement } from './element';
 import Component from './component';
 import Fragment from './fragment';
 
-import { inspect } from 'util';
-function log(object) {
-    return console.log(inspect(object, {
-        colors: true,
-        depth: Infinity
-    }));
-}
+// import { inspect } from 'util';
+// function log(object) {
+//     return console.log(inspect(object, {
+//         colors: true,
+//         depth: Infinity
+//     }));
+// }
 
 const B = props => {
 	return (

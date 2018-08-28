@@ -23,4 +23,4 @@ export default obj => {
 			return `${attr}=\"${value}\"`;
 		})
 		.join(' ')
-}
+};

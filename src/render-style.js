@@ -30,4 +30,4 @@ export default style => (
 			return camelToDash(prop) + ': ' + value;
 		})
         .join('; ')
-)
+);
