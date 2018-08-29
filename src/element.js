@@ -5,17 +5,29 @@ const reservedProps = {
 };
 
 export const createElement = (type, props, ...children) => {
-	const filteredProps = Object.entries(props)
-		.filter(([ name ]) => !reservedProps.hasOwnProperty(name))
-		.reduce((acc, [name, value]) => {
+	const filteredProps = {};
 
-		}, {});
+	if (props) {
+		Object.entries(props).forEach(([name, value]) => {
+			if (!reservedProps.hasOwnProperty(name)) {
+				filteredProps[name] = value;
+			}
+		});
+	}
+
+	if (type && type.defaultProps) {
+		Object.entries(type.defaultProps).forEach(([name, value]) => {
+			if (filteredProps[name] === undefined) {
+				filteredProps[name] = value;
+			}
+		});
+	}
 
 	return {
 		_isElement: true,
 		type,
 		props: {
-			...props,
+			...filteredProps,
 			children: children ? flatten(children) : []
 		}
 	};
@@ -23,7 +35,7 @@ export const createElement = (type, props, ...children) => {
 
 export const cloneElement = (element, props, ...children) => {
 	if (element === null || element === undefined) {
-		throw new Error(`React.cloneElement(...): The argument must be a React element, but you passed ${element}`)
+		throw new Error(`React.cloneElement(...): The argument must be a React element, but you passed ${element}`);
 	}
 
 	return createElement(element.type, );
@@ -32,5 +44,5 @@ export const cloneElement = (element, props, ...children) => {
 export const isElement = object => (
 	typeof object === 'object'
 	&& object !== null
-	&& value._isElement === true
+	&& object._isElement === true
 );

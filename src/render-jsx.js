@@ -108,7 +108,7 @@ class JsxRenderer {
 		return null;
 	}
 
-	renderFragment(nodeOrNodes) {
+	renderFragment(nodeOrNodes, context) {
 		if (!nodeOrNodes || nodeOrNodes.type !== Fragment) {
 			return null;
 		}
@@ -124,7 +124,7 @@ class JsxRenderer {
 		}, { css: null, html: [] })
 	}
 
-	renderComponent(nodeOrNodes) {
+	renderComponent(nodeOrNodes, context) {
 		if (!nodeOrNodes || !nodeOrNodes.type || typeof nodeOrNodes.type !== 'function') {
 			return null;
 		}
@@ -137,13 +137,9 @@ class JsxRenderer {
 			propTypes.checkPropTypes(ctor.propTypes, nodeOrNodes.props, 'prop', componentName);
 		}
 
-		const props = 'defaultProps' in ctor
-			? { ...ctor.defaultProps, ...nodeOrNodes.props }
-			: nodeOrNodes.props;
-
 		const renderedNode = isClass
-			? (new ctor(props)).render()
-			: ctor(props);
+			? (new ctor(nodeOrNodes.props)).render()
+			: ctor(nodeOrNodes.props);
 
 		const rendered = this.render(renderedNode);
 
