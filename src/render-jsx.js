@@ -3,6 +3,7 @@ import propTypes from 'prop-types';
 import processObjectEntries from './helpers/process-object-entries';
 import flatten from './helpers/array-flatten';
 import Fragment from './fragment';
+import Context from './context';
 import parseEmlStyles from './parse-eml-styles';
 import replaceAttrFormat from './replace-attr-format';
 
@@ -16,16 +17,17 @@ class JsxRenderer {
 		return this.render(nodeOrNodes);
 	}
 
-	render(nodeOrNodes) {
+	render(nodeOrNodes, context) {
 		const ctor = this.constructor;
 
 		const rendered = (
 			ctor.renderNull(nodeOrNodes)
 			|| ctor.renderStringOrNumber(nodeOrNodes)
-			|| this.renderArray(nodeOrNodes)
-			|| this.renderFragment(nodeOrNodes)
-			|| this.renderElement(nodeOrNodes)
-			|| this.renderComponent(nodeOrNodes)
+			|| this.renderArray(nodeOrNodes, context)
+			|| this.renderFragment(nodeOrNodes, context)
+			|| this.renderContext(nodeOrNodes, context)
+			|| this.renderElement(nodeOrNodes, context)
+			|| this.renderComponent(nodeOrNodes, context)
 		);
 
 		if (rendered) {
@@ -39,22 +41,22 @@ class JsxRenderer {
 		return 'el-' + index;
 	}
 
-	static renderNull(nodeOrNodes) {
-		return nodeOrNodes === null || nodeOrNodes === undefined
+	static renderNull(node) {
+		return node === null || node === undefined
 			? { css: null, html: '' }
-			: null
+			: null;
 	}
 
-	static renderStringOrNumber(nodeOrNodes) {
-		return typeof nodeOrNodes === 'string' || typeof nodeOrNodes === 'number'
-			? { css: null, html: String(nodeOrNodes) }
-			: null
+	static renderStringOrNumber(node) {
+		return typeof node === 'string' || typeof node === 'number'
+			? { css: null, html: String(node) }
+			: null;
 	};
 
-	renderArray(nodeOrNodes) {
+	renderArray(nodeOrNodes, context) {
 		return Array.isArray(nodeOrNodes)
 			? nodeOrNodes.reduce((acc, child) => {
-				const renderedChild = this.render(child);
+				const renderedChild = this.render(child, context);
 				return {
 					css: { ...acc.css, ...renderedChild.css },
 					html: Array.isArray(renderedChild.html)
@@ -65,9 +67,9 @@ class JsxRenderer {
 			: null;
 	}
 
-	renderElement(nodeOrNodes) {
-		if (nodeOrNodes && typeof nodeOrNodes.type === 'string') {
-			const { children, ...attrs } = nodeOrNodes.props;
+	renderElement(node, context) {
+		if (node && typeof node.type === 'string') {
+			const { children, ...attrs } = node.props;
 			let css;
 
 			if (attrs.style) {
@@ -86,19 +88,19 @@ class JsxRenderer {
 			}
 
 			const renderedChildren = children.reduce((acc, child) => {
-				const renderedChild = this.render(child);
+				const renderedChild = this.render(child, context);
 				return {
 					css: { ...acc.css, ...renderedChild.css },
 					html: Array.isArray(renderedChild.html)
 						? [...acc.html, ...renderedChild.html]
 						: [...acc.html, renderedChild.html]
-				}
+				};
 			}, { css: null, html: [] });
 
 			return {
 				css: css ? merge(css, renderedChildren.css) : renderedChildren.css,
 				html: {
-					tagName: nodeOrNodes.type,
+					tagName: node.type,
 					attrs: processObjectEntries(attrs, (key, value) => [replaceAttrFormat(key), value]),
 					children: renderedChildren.html
 				}
@@ -108,38 +110,55 @@ class JsxRenderer {
 		return null;
 	}
 
-	renderFragment(nodeOrNodes, context) {
-		if (!nodeOrNodes || nodeOrNodes.type !== Fragment) {
+	renderFragment(node, context) {
+		if (!node || node.type !== Fragment) {
 			return null;
 		}
 
-		return nodeOrNodes.props.children.reduce((acc, child) => {
-			const renderedChild = this.render(child);
+		return node.props.children.reduce((acc, child) => {
+			const renderedChild = this.render(child, context);
 			return {
 				css: { ...acc.css, ...renderedChild.css },
 				html: Array.isArray(renderedChild.html)
 					? [...acc.html, ...renderedChild.html]
 					: [...acc.html, renderedChild.html]
 			};
-		}, { css: null, html: [] })
+		}, { css: null, html: [] });
 	}
 
-	renderComponent(nodeOrNodes, context) {
-		if (!nodeOrNodes || !nodeOrNodes.type || typeof nodeOrNodes.type !== 'function') {
+	renderContext(node, context) {
+		if (!node || node.type !== Context) {
+			const { children, ...props } = node.props;
+			const mixedContext = { ...context, ...props };
+
+			return children.reduce((acc, child) => {
+				const renderedChild = this.render(child, mixedContext);
+				return {
+					css: { ...acc.css, ...renderedChild.css },
+					html: Array.isArray(renderedChild.html)
+						? [...acc.html, ...renderedChild.html]
+						: [...acc.html, renderedChild.html]
+				};
+			}, { css: null, html: [] });
+		}
+	}
+
+	renderComponent(node, context) {
+		if (!node || !node.type || typeof node.type !== 'function') {
 			return null;
 		}
 
-		const ctor = nodeOrNodes.type;
+		const ctor = node.type;
 		const componentName = ctor.name || 'UnknownComponent';
 		const isClass = ctor.prototype && ctor.prototype.isComponent;
 
 		if (DEV && 'propTypes' in ctor) {
-			propTypes.checkPropTypes(ctor.propTypes, nodeOrNodes.props, 'prop', componentName);
+			propTypes.checkPropTypes(ctor.propTypes, node.props, 'prop', componentName);
 		}
 
 		const renderedNode = isClass
-			? (new ctor(nodeOrNodes.props)).render()
-			: ctor(nodeOrNodes.props);
+			? (new ctor(node.props, context)).render()
+			: ctor(node.props, context);
 
 		const rendered = this.render(renderedNode);
 
