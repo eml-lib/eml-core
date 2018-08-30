@@ -68,46 +68,46 @@ class JsxRenderer {
 	}
 
 	renderElement(node, context) {
-		if (node && typeof node.type === 'string') {
-			const { children, ...attrs } = node.props;
-			let css;
-
-			if (attrs.style) {
-				const nextId = this.constructor.getId(this.idIndex + 1);
-				const { mediaCss, inlineStyles } = parseEmlStyles(attrs.style, nextId);
-
-				if (Object.keys(inlineStyles).length > 0) {
-					attrs.style = inlineStyles;
-				}
-
-				if (Object.keys(mediaCss).length > 0) {
-					this.idIndex++;
-					css = mediaCss;
-					attrs.id = this.constructor.getId(this.idIndex);
-				}
-			}
-
-			const renderedChildren = children.reduce((acc, child) => {
-				const renderedChild = this.render(child, context);
-				return {
-					css: { ...acc.css, ...renderedChild.css },
-					html: Array.isArray(renderedChild.html)
-						? [...acc.html, ...renderedChild.html]
-						: [...acc.html, renderedChild.html]
-				};
-			}, { css: null, html: [] });
-
-			return {
-				css: css ? merge(css, renderedChildren.css) : renderedChildren.css,
-				html: {
-					tagName: node.type,
-					attrs: processObjectEntries(attrs, (key, value) => [replaceAttrFormat(key), value]),
-					children: renderedChildren.html
-				}
-			};
+		if (!node || typeof node.type !== 'string') {
+			return null;
 		}
 
-		return null;
+		const { children, ...attrs } = node.props;
+		let css;
+
+		if (attrs.style) {
+			const nextId = this.constructor.getId(this.idIndex + 1);
+			const { mediaCss, inlineStyles } = parseEmlStyles(attrs.style, nextId);
+
+			if (Object.keys(inlineStyles).length > 0) {
+				attrs.style = inlineStyles;
+			}
+
+			if (Object.keys(mediaCss).length > 0) {
+				this.idIndex++;
+				css = mediaCss;
+				attrs.id = this.constructor.getId(this.idIndex);
+			}
+		}
+
+		const renderedChildren = children.reduce((acc, child) => {
+			const renderedChild = this.render(child, context);
+			return {
+				css: { ...acc.css, ...renderedChild.css },
+				html: Array.isArray(renderedChild.html)
+					? [...acc.html, ...renderedChild.html]
+					: [...acc.html, renderedChild.html]
+			};
+		}, { css: null, html: [] });
+
+		return {
+			css: css ? merge(css, renderedChildren.css) : renderedChildren.css,
+			html: {
+				tagName: node.type,
+				attrs: processObjectEntries(attrs, (key, value) => [replaceAttrFormat(key), value]),
+				children: renderedChildren.html
+			}
+		};
 	}
 
 	renderFragment(node, context) {
@@ -128,19 +128,21 @@ class JsxRenderer {
 
 	renderContext(node, context) {
 		if (!node || node.type !== Context) {
-			const { children, ...props } = node.props;
-			const mixedContext = { ...context, ...props };
-
-			return children.reduce((acc, child) => {
-				const renderedChild = this.render(child, mixedContext);
-				return {
-					css: { ...acc.css, ...renderedChild.css },
-					html: Array.isArray(renderedChild.html)
-						? [...acc.html, ...renderedChild.html]
-						: [...acc.html, renderedChild.html]
-				};
-			}, { css: null, html: [] });
+			return null;
 		}
+
+		const { children, ...props } = node.props;
+		const mixedContext = { ...context, ...props };
+
+		return children.reduce((acc, child) => {
+			const renderedChild = this.render(child, mixedContext);
+			return {
+				css: { ...acc.css, ...renderedChild.css },
+				html: Array.isArray(renderedChild.html)
+					? [...acc.html, ...renderedChild.html]
+					: [...acc.html, renderedChild.html]
+			};
+		}, { css: null, html: [] });
 	}
 
 	renderComponent(node, context) {

@@ -1,24 +1,12 @@
 import flatten from './helpers/array-flatten';
 
-const reservedProps = {
-	context: true
-};
-
 export const createElement = (type, props, ...children) => {
-	const filteredProps = {};
-
-	if (props) {
-		Object.entries(props).forEach(([name, value]) => {
-			if (!reservedProps.hasOwnProperty(name)) {
-				filteredProps[name] = value;
-			}
-		});
-	}
+	const newProps = { ...props };
 
 	if (type && type.defaultProps) {
 		Object.entries(type.defaultProps).forEach(([name, value]) => {
-			if (filteredProps[name] === undefined) {
-				filteredProps[name] = value;
+			if (newProps[name] === undefined) {
+				newProps[name] = value;
 			}
 		});
 	}
@@ -27,19 +15,19 @@ export const createElement = (type, props, ...children) => {
 		_isElement: true,
 		type,
 		props: {
-			...filteredProps,
+			...newProps,
 			children: children ? flatten(children) : []
 		}
 	};
 };
 
-export const cloneElement = (element, props, ...children) => {
-	if (element === null || element === undefined) {
-		throw new Error(`React.cloneElement(...): The argument must be a React element, but you passed ${element}`);
-	}
-
-	return createElement(element.type, );
-};
+// export const cloneElement = (element, props, ...children) => {
+// 	if (element === null || element === undefined) {
+// 		throw new Error(`React.cloneElement(...): The argument must be a React element, but you passed ${element}`);
+// 	}
+//
+// 	return createElement(element.type, );
+// };
 
 export const isElement = object => (
 	typeof object === 'object'
