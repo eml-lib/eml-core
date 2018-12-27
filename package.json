@@ -31,6 +31,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.2.1",
     "rollup-plugin-node-resolve": "^3.3.0",
+    "to-css": "^1.2.1",
     "warning": "^4.0.2"
   },
   "devDependencies": {

@@ -21,13 +21,13 @@ class JsxRenderer {
 		const ctor = this.constructor;
 
 		const rendered = (
-			ctor.renderNull(nodeOrNodes)
-			|| ctor.renderStringOrNumber(nodeOrNodes)
-			|| this.renderArray(nodeOrNodes, context)
-			|| this.renderFragment(nodeOrNodes, context)
-			|| this.renderContext(nodeOrNodes, context)
-			|| this.renderElement(nodeOrNodes, context)
-			|| this.renderComponent(nodeOrNodes, context)
+			ctor.renderIfNull(nodeOrNodes)
+			|| ctor.renderIfStringOrNumber(nodeOrNodes)
+			|| this.renderIfArray(nodeOrNodes, context)
+			|| this.renderIfFragment(nodeOrNodes, context)
+			|| this.renderIfContext(nodeOrNodes, context)
+			|| this.renderIfElement(nodeOrNodes, context)
+			|| this.renderIfComponent(nodeOrNodes, context)
 		);
 
 		if (rendered) {
@@ -41,19 +41,19 @@ class JsxRenderer {
 		return 'el-' + index;
 	}
 
-	static renderNull(node) {
+	static renderIfNull(node) {
 		return node === null || node === undefined
 			? { css: null, html: '' }
 			: null;
 	}
 
-	static renderStringOrNumber(node) {
+	static renderIfStringOrNumber(node) {
 		return typeof node === 'string' || typeof node === 'number'
 			? { css: null, html: String(node) }
 			: null;
 	};
 
-	renderArray(nodeOrNodes, context) {
+	renderIfArray(nodeOrNodes, context) {
 		return Array.isArray(nodeOrNodes)
 			? nodeOrNodes.reduce((acc, child) => {
 				const renderedChild = this.render(child, context);
@@ -67,12 +67,13 @@ class JsxRenderer {
 			: null;
 	}
 
-	renderElement(node, context) {
+	renderIfElement(node, context) {
 		if (!node || typeof node.type !== 'string') {
 			return null;
 		}
 
 		const { children, ...attrs } = node.props;
+
 		let css;
 
 		if (attrs.style) {
@@ -110,7 +111,7 @@ class JsxRenderer {
 		};
 	}
 
-	renderFragment(node, context) {
+	renderIfFragment(node, context) {
 		if (!node || node.type !== Fragment) {
 			return null;
 		}
@@ -126,7 +127,7 @@ class JsxRenderer {
 		}, { css: null, html: [] });
 	}
 
-	renderContext(node, context) {
+	renderIfContext(node, context) {
 		if (!node || node.type !== Context) {
 			return null;
 		}
@@ -145,7 +146,7 @@ class JsxRenderer {
 		}, { css: null, html: [] });
 	}
 
-	renderComponent(node, context) {
+	renderIfComponent(node, context) {
 		if (!node || !node.type || typeof node.type !== 'function') {
 			return null;
 		}

@@ -1,6 +1,8 @@
-import renderCss from './render-css';
+import toCss from 'to-css';
+// import renderCss from './render-css';
 import renderHtml from './render-html';
 import renderJsx from './render-jsx';
+import transformCssProperty from './transform-css-property';
 
 // import { inspect } from 'util';
 // function log(object) {
@@ -10,21 +12,26 @@ import renderJsx from './render-jsx';
 //     }));
 // }
 
+const renderCss = css => toCss(css, {
+	indent: '\t',
+	property: transformCssProperty,
+	value: pixelate
+});
+
 const injectCss = (html, css) => {
-	const regexp = /(?=<\/head>)/i;
-	const hasHead = regexp.test(html);
+	const closeHeadRegexp = /(?=<\/head>)/i;
+	const hasHead = closeHeadRegexp.test(html);
 
 	if (css) {
 		if (hasHead) {
-			const cssString = renderCss(css);
 			const styleTag = renderHtml({
 				tagName: 'style',
 				attrs: {
 					type: 'text/css'
 				},
-				children: [cssString]
+				children: [css]
 			}, 1);
-			return html.replace(regexp, styleTag);
+			return html.replace(closeHeadRegexp, styleTag);
 		} else {
 			throw new Error('There is no `head` tag in html');
 		}
@@ -35,7 +42,9 @@ const injectCss = (html, css) => {
 
 export default (jsxEl, config = {}) => {
 	const { css, html } = renderJsx(jsxEl);
-	const renderedHtml = renderHtml(html);
 
-	return injectCss(renderedHtml, css);
+	const htmlString = renderHtml(html);
+	const cssString = renderCss(css);
+
+	return injectCss(htmlString, cssString);
 };

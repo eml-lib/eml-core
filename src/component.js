@@ -1,6 +1,7 @@
 export default class Component {
-	constructor(props) {
+	constructor(props, context) {
 		this.props = props;
+		this.context = context;
 	}
 
 	render() {
